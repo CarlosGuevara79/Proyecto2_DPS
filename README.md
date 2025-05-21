@@ -263,8 +263,15 @@ Usar siempre constantes en lugar de strings.
 
 * **Nota importante: No se agrega API de google porque la aplicacion aun no esta registrada en firebase, al hacerlo
 * 1. Se debera tener los Client IDs (iOS, Android y Web). se debera configurar firebase para permitir el proveedor de google.
-* 2. Se debera de Instalar y configurar en tu proyecto las librerías de Expo para OAuth
-* 3. Extender los servicios (apiHandlers.js) y la pantalla de login para incorporar el botón de “Iniciar con Google”.
+* 2. Se debera de Instalar y configurar en el proyecto las librerías de Expo para OAuth
+* 3. Instalar dependencias : Para Expo Auth Session : npm install expo-auth-session y expo install @expo/vector-icons (para el incono de google)
+* 4. Extender los servicios (apiHandlers.js) y la pantalla de login para incorporar el botón de “Iniciar con Google”.
+* 5. Se agrega en app.json (estos datos fabricio debera proporcionarlos ya que el tiene la cuenta de firebase) para leer los clientes IDs
+     "extra": {
+      "webClientId":   "EL_WEB_CLIENT_ID",
+      "iosClientId":   "EL_IOS_CLIENT_ID",
+      "androidClientId":"EL_ANDROID_CLIENT_ID"
+* 6. Luego integrar en LoginScreen.js
   
 ---
 
