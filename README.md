@@ -259,7 +259,13 @@ Usar siempre constantes en lugar de strings.
 * **Puertos**: `npx expo start --web --port 19008 -c`.
 * **Node**: usar 16.x o 18.x (ej. `nvm use 16`).
 * **Import/Export**: default vs named imports.
+---
 
+* **Nota importante: No se agrega API de google porque la aplicacion aun no esta registrada en firebase, al hacerlo
+* 1. Se debera tener los Client IDs (iOS, Android y Web). se debera configurar firebase para permitir el proveedor de google.
+* 2. Se debera de Instalar y configurar en tu proyecto las librerías de Expo para OAuth
+* 3. Extender los servicios (apiHandlers.js) y la pantalla de login para incorporar el botón de “Iniciar con Google”.
+  
 ---
 
 *¡Roles del Equipo Metodologia Scrum!*
