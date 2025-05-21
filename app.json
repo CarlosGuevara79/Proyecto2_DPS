@@ -8,10 +8,10 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "extra": {
-      "webClientId":   "EL_WEB_CLIENT_ID",
-      "iosClientId":   "EL_IOS_CLIENT_ID",
-      "androidClientId":"EL_ANDROID_CLIENT_ID"
+    "extra": { 
+      "webClientId":   "agregar_WEB_CLIENT_ID",
+      "iosClientId":   "agregar_IOS_CLIENT_ID",
+      "androidClientId":"agregar_ANDROID_CLIENT_ID"
     },
     "splash": {
       "image": "./assets/splash-icon.png",
