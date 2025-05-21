@@ -1,75 +1,114 @@
 // src/screens/Auth/LoginScreen.js
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import {
-  View, Text, StyleSheet,
-  TextInput, TouchableOpacity, Alert
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  Dimensions
 } from 'react-native';
-import { loginUser } from '../../services/apiHandlers';
-import { AuthContext } from '../../hooks/useAuthContext';
+
+const { width } = Dimensions.get('window');
+const FORM_WIDTH = Math.min(width * 0.9, 350);
 
 export default function LoginScreen({ navigation }) {
-  const [email, setEmail]       = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading]   = useState(false);
-  const { setUser, setRole }    = useContext(AuthContext);
-
-  const onLogin = async () => {
-    setLoading(true);
-    try {
-      const { user, role } = await loginUser(email, password);
-      setUser(user);
-      setRole(role);
-      // navega al stack principal según rol
-      navigation.replace('Main');
-    } catch (err) {
-      Alert.alert('Error al iniciar sesión', err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [email, setEmail] = useState('');
+  const [pass, setPass]   = useState('');
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Iniciar sesión</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Correo electrónico"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Contraseña"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-
-      <TouchableOpacity
-        style={[styles.button, loading && styles.disabled]}
-        onPress={onLogin}
-        disabled={loading}
+    <SafeAreaView style={styles.flex}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.flex}
       >
-        <Text style={styles.buttonText}>
-          {loading ? 'Ingresando...' : 'Ingresar'}
-        </Text>
-      </TouchableOpacity>
+        <View style={styles.container}>
+          <Text style={styles.title}>Iniciar sesión</Text>
 
-      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.link}>¿No tienes cuenta? Regístrate</Text>
-      </TouchableOpacity>
-    </View>
+          <TextInput
+            style={styles.input}
+            placeholder="Correo electrónico"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            placeholderTextColor="#666"
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="Contraseña"
+            value={pass}
+            onChangeText={setPass}
+            secureTextEntry
+            placeholderTextColor="#666"
+          />
+
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Main')}>
+            <Text style={styles.buttonText}>Ingresar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+            <Text style={styles.link}>¿No tienes cuenta? Regístrate</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
+LoginScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired
+  }).isRequired
+};
+
 const styles = StyleSheet.create({
-  container: { flex:1, padding:20, justifyContent:'center' },
-  title:     { fontSize:24, fontWeight:'bold', marginBottom:20, textAlign:'center' },
-  input:     { borderWidth:1, borderColor:'#ccc', borderRadius:6, padding:10, marginBottom:15 },
-  button:    { backgroundColor:'#007AFF', padding:12, borderRadius:8, alignItems:'center' },
-  disabled:  { backgroundColor:'#aaccee' },
-  buttonText:{ color:'#fff', fontSize:16 },
-  link:      { color:'#007AFF', textAlign:'center', marginTop:10 }
+  flex: { flex: 1 },
+  container: {
+    flex: 1,
+    width: FORM_WIDTH,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '600',
+    marginBottom: 20,
+    textAlign: 'center'
+  },
+  input: {
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    marginBottom: 12,
+    fontSize: 14,
+    backgroundColor: '#fff'
+  },
+  button: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 10,
+    borderRadius: 6,
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 12
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500'
+  },
+  link: {
+    textAlign: 'center',
+    color: '#007AFF',
+    fontSize: 14
+  }
 });
+

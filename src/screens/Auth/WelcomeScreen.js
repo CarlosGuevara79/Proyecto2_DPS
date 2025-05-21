@@ -1,49 +1,95 @@
 // src/screens/Auth/WelcomeScreen.js
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import PropTypes from 'prop-types';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ImageBackground,
+  Dimensions,
+  SafeAreaView,
+  TouchableOpacity
+} from 'react-native';
 
-export default function WelcomeScreen({ navigation }) {
+import bgWelcome from '../../../assets/fondoinicio.jpg';  // 1) Importamos la imagen
+
+const { width, height } = Dimensions.get('window');
+
+export default function WelcomeScreen({ navigation }) {  // 2) Desestructuramos navigation
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>¡Bienvenid@ a Eventos Comunitarios!</Text>
-      <Text style={styles.subtitle}>Conéctate con tu comunidad.</Text>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('Login')}
+    <SafeAreaView style={styles.flex}>
+      <ImageBackground
+        source={bgWelcome}           // uso de la importación
+        style={styles.background}
+        resizeMode="cover"
       >
-        <Text style={styles.buttonText}>Comenzar</Text>
-      </TouchableOpacity>
-    </View>
+        <View style={styles.overlay}>
+          <Text style={styles.title}>Eventos Comunitarios</Text>
+          <Text style={styles.subtitle}>
+            Conecta, comparte y participa en tu comunidad.
+          </Text>
+
+          <TouchableOpacity
+            style={styles.outlinedButton}
+            onPress={() => navigation.navigate('Login')}
+          >
+            <Text style={styles.outlinedButtonText}>Comenzar</Text>
+          </TouchableOpacity>
+        </View>
+      </ImageBackground>
+    </SafeAreaView>
   );
 }
 
+// 3) Validación de props
+WelcomeScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired
+  }).isRequired
+};
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1, 
-    justifyContent: 'center', 
+  flex: {
+    flex: 1
+  },
+  background: {
+    width,
+    height
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#eef'
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30
   },
   title: {
-    fontSize: 28,
+    fontSize: 36,
+    color: '#fff',
     fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center'
+    textAlign: 'center',
+    marginBottom: 10
   },
   subtitle: {
-    fontSize: 16,
-    marginBottom: 30,
-    textAlign: 'center'
+    fontSize: 18,
+    color: '#eee',
+    textAlign: 'center',
+    marginBottom: 30
   },
-  button: {
-    backgroundColor: '#007AFF',
+  outlinedButton: {
+    borderWidth: 2,
+    borderColor: '#fff',
+    borderRadius: 25,
     paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8
+    paddingHorizontal: 40,
+    alignItems: 'center',
+    marginBottom: 40
   },
-  buttonText: {
+  outlinedButtonText: {
     color: '#fff',
-    fontSize: 16
+    fontSize: 18,
+    fontWeight: '600'
   }
 });
