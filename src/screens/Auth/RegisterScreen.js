@@ -1,4 +1,3 @@
-// src/screens/Auth/RegisterScreen.js
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
@@ -10,15 +9,47 @@ import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
-  Dimensions
+  Dimensions,
+  Alert
 } from 'react-native';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../../services/firebaseConfig';
+import { ROLE_MIEMBRO } from '../../services/roles'
 
 const { width } = Dimensions.get('window');
 const FORM_WIDTH = Math.min(width * 0.9, 350);
 
 export default function RegisterScreen({ navigation }) {
-  const [email, setEmail]     = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const handleRegister = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Completa todos los campos.');
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      console.log('Creando usuario con:', {
+        uid: user?.uid,
+        email,
+        rol: 'MIEMBRO'
+      });
+      await setDoc(doc(db, 'usuarios', user.uid), {
+        email,
+        rol: ROLE_MIEMBRO
+      });
+
+      Alert.alert('Éxito', 'Usuario registrado correctamente.');
+      navigation.replace('Login');
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'No se pudo registrar el usuario.');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.flex}>
@@ -50,7 +81,7 @@ export default function RegisterScreen({ navigation }) {
 
           <TouchableOpacity
             style={styles.button}
-            onPress={() => navigation.replace('Login')}
+            onPress={handleRegister}
           >
             <Text style={styles.buttonText}>Registrar</Text>
           </TouchableOpacity>
@@ -115,4 +146,3 @@ const styles = StyleSheet.create({
     fontSize: 14
   }
 });
-

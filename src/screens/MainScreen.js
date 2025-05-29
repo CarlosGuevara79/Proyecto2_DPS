@@ -9,23 +9,31 @@ import {
   SafeAreaView,
   TouchableOpacity
 } from 'react-native';
+import { ROLE_ADMIN, ROLE_ORGANIZADOR } from '../services/roles';
+import { useAuthContext } from '../hooks/useAuthContext';
 
 const { width, height } = Dimensions.get('window');
 
-export default function MainScreen({ navigation }) {  // 2) Desestructuramos navigation
+export default function MainScreen({ navigation }) {
+    const { role } = useAuthContext();
+console.log("El rol es: {0}",role)
   return (
     <SafeAreaView style={styles.flex}>
-        <View style={styles.overlay}>
-          <Text style={styles.title}>Eventos Comunitarios</Text>
-          <Text style={styles.subtitle}>
-            Bienvenido a tu gestor de eventos comunitarios.
-          </Text>
-        </View>
+      <View style={styles.overlay}>
+        <Text style={styles.title}>Eventos Comunitarios</Text>
+        <Text style={styles.subtitle}>
+          Bienvenido a tu gestor de eventos comunitarios.
+        </Text>
+        {(role === ROLE_ADMIN || role === ROLE_ORGANIZADOR) && (
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('EventCreate')}>
+            <Text style={styles.buttonText}>Crear Evento</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     </SafeAreaView>
   );
 }
 
-// 3) Validación de props
 MainScreen.propTypes = {
   navigation: PropTypes.shape({
     navigate: PropTypes.func.isRequired

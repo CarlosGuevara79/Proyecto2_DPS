@@ -1,16 +1,13 @@
 // src/services/apiHandlers.js
 import { auth, db } from './firebaseConfig';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc,collection,addDoc } from 'firebase/firestore';
 import { ROLE_MIEMBRO } from './roles';
 
-/**
- * Registra un usuario en Auth y en Firestore con rol MIEMBRO.
- */
 export async function registerUser(email, password) {
   const cred = await createUserWithEmailAndPassword(auth, email, password);
   const { uid } = cred.user;
-  // persistir rol por defecto usando la constante
+
   await setDoc(doc(db, 'users', uid), {
     email,
     role: ROLE_MIEMBRO,
@@ -19,9 +16,6 @@ export async function registerUser(email, password) {
   return cred.user;
 }
 
-/**
- * Inicia sesión y devuelve datos del usuario + rol.
- */
 export async function loginUser(email, password) {
   const cred = await signInWithEmailAndPassword(auth, email, password);
   const { uid } = cred.user;
@@ -31,3 +25,9 @@ export async function loginUser(email, password) {
   }
   return { user: cred.user, role: snap.data().role };
 }
+export async function createEvent(eventData) {
+  const eventosRef = collection(db, 'eventos'); 
+  const docRef = await addDoc(eventosRef, eventData);
+  return docRef.id;
+}
+

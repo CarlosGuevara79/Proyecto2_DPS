@@ -1,4 +1,3 @@
-// src/screens/Auth/LoginScreen.js
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
@@ -10,15 +9,51 @@ import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
-  Dimensions
+  Dimensions,
+  Alert
 } from 'react-native';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../../services/firebaseConfig';
+import { useAuthContext } from '../../hooks/useAuthContext';
 
 const { width } = Dimensions.get('window');
 const FORM_WIDTH = Math.min(width * 0.9, 350);
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
-  const [pass, setPass]   = useState('');
+  const [pass, setPass] = useState('');
+  const { setUser, setRole } = useAuthContext();
+
+  const handleLogin = async () => {
+    if (!email || !pass) {
+      Alert.alert('Error', 'Completa todos los campos.');
+      return;
+    }
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+      const user = userCredential.user;
+
+      // Obtener rol desde Firestore
+      const userRef = doc(db, 'usuarios', user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const data = userSnap.data();
+        setUser(user);         
+        setRole(data.rol);   
+        navigation.navigate('Main'); 
+
+      } else {
+        Alert.alert('Error', 'No se encontró información del usuario.');
+      }
+
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Credenciales inválidas o problema al iniciar sesión.');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.flex}>
@@ -48,7 +83,7 @@ export default function LoginScreen({ navigation }) {
             placeholderTextColor="#666"
           />
 
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Main')}>
+          <TouchableOpacity style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>Ingresar</Text>
           </TouchableOpacity>
 
@@ -63,7 +98,8 @@ export default function LoginScreen({ navigation }) {
 
 LoginScreen.propTypes = {
   navigation: PropTypes.shape({
-    navigate: PropTypes.func.isRequired
+    navigate: PropTypes.func.isRequired,
+    replace: PropTypes.func.isRequired
   }).isRequired
 };
 
@@ -111,4 +147,3 @@ const styles = StyleSheet.create({
     fontSize: 14
   }
 });
-
