@@ -1,9 +1,11 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MainScreen from '../screens/MainScreen';
-import EventCreateScreen from '../screens/Events/EventCreateScreen';
-const Stack = createNativeStackNavigator();
+import EventCreateScreen from './EventCreateNavigator';
+import EditarEventoScreen from '../screens/Events/EditarEventoScreen';
+import EventDetailScreen from '../screens/Events/EventDetailScreen';
 
+const Stack = createNativeStackNavigator();
 export default function AdminNavigator() {
   return (
     <Stack.Navigator>
@@ -15,6 +17,9 @@ export default function AdminNavigator() {
         name="EventCreate"
         component={EventCreateScreen}
       />
+      <Stack.Screen name="EditarEvento" component={EditarEventoScreen} />
+      <Stack.Screen name="VerEvento" component={EventDetailScreen} />
+      <Stack.Screen name="EditarEvento" component={EditarEventoScreen} />
     </Stack.Navigator>
   );
 }

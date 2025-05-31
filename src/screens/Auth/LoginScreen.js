@@ -1,95 +1,176 @@
+// src/screens/Auth/LoginScreen.js
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
   Dimensions,
-  Alert
+  Alert,
+  Image,
+  ScrollView, // <--- Import ScrollView
 } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../services/firebaseConfig';
 import { useAuthContext } from '../../hooks/useAuthContext';
 
-const { width } = Dimensions.get('window');
-const FORM_WIDTH = Math.min(width * 0.9, 350);
+// Import the new UI components
+import InputField from '../../components/InputField';
+import ButtonCustom from '../../components/ButtonCustom';
+import SocialIntegration from '../../components/SocialIntegration';
+
+// Import your Login image
+import LoginImage from '../../../assets/LoginImage.png';
+
+const { width, height } = Dimensions.get('window'); // <--- Get both width and height
+const FORM_MAX_WIDTH = 380;
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
-  const [pass, setPass] = useState('');
+  const [password, setPassword] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
   const { setUser, setRole } = useAuthContext();
 
+  const validateInputs = () => {
+    let isValid = true;
+    setEmailError('');
+    setPasswordError('');
+
+    if (!email) {
+      setEmailError('El correo es obligatorio.');
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      setEmailError('Formato de correo inválido.');
+      isValid = false;
+    }
+
+    if (!password) {
+      setPasswordError('La contraseña es obligatoria.');
+      isValid = false;
+    } else if (password.length < 6) {
+        setPasswordError('La contraseña debe tener al menos 6 caracteres.');
+        isValid = false;
+    }
+
+    return isValid;
+  };
+
   const handleLogin = async () => {
-    if (!email || !pass) {
-      Alert.alert('Error', 'Completa todos los campos.');
+    if (!validateInputs()) {
       return;
     }
 
+    setIsLoading(true);
+
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Obtener rol desde Firestore
       const userRef = doc(db, 'usuarios', user.uid);
       const userSnap = await getDoc(userRef);
 
       if (userSnap.exists()) {
         const data = userSnap.data();
-        setUser(user);         
-        setRole(data.rol);   
-        navigation.navigate('Main'); 
-
+        setUser(user);
+        setRole(data.rol);
+        navigation.navigate('Main');
       } else {
-        Alert.alert('Error', 'No se encontró información del usuario.');
+        Alert.alert('Error', 'No se encontró información de rol del usuario.');
       }
 
     } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'Credenciales inválidas o problema al iniciar sesión.');
+      console.error('Error al iniciar sesión:', error);
+      let errorMessage = 'Credenciales inválidas o problema al iniciar sesión.';
+      if (error.code === 'auth/user-not-found') {
+        errorMessage = 'No se encontró un usuario con ese correo.';
+      } else if (error.code === 'auth/wrong-password') {
+        errorMessage = 'Contraseña incorrecta.';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'El formato del correo es inválido.';
+      }
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleGoogleLogin = () => {
+    Alert.alert('Google Login', 'Implement Google login here!');
+  };
+
+  const handleFacebookLogin = () => {
+    Alert.alert('Facebook Login', 'Implement Facebook login here!');
   };
 
   return (
     <SafeAreaView style={styles.flex}>
+      {/* KeyboardAvoidingView should wrap the scrollable content */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.flex}
       >
-        <View style={styles.container}>
-          <Text style={styles.title}>Iniciar sesión</Text>
+        {/* Top Image Section - remains outside ScrollView as it's static */}
+        <View style={styles.topImageContainer}>
+          <Image source={LoginImage} style={styles.heroImage} resizeMode="cover" />
+        </View>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Correo electrónico"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            placeholderTextColor="#666"
-          />
+        {/* Login Form Container - now contains a ScrollView for its content */}
+        <View style={styles.formContainer}>
+          {/* ScrollView wraps the actual form elements */}
+          <ScrollView
+            contentContainerStyle={styles.scrollContent} // Important for flexible content sizing
+            showsVerticalScrollIndicator={false} // Hide scroll indicator for cleaner look
+            keyboardShouldPersistTaps="handled" // Helps with dismissing keyboard when tapping outside inputs
+          >
+            <Text style={styles.welcomeTitle}>Bienvenido</Text>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Contraseña"
-            value={pass}
-            onChangeText={setPass}
-            secureTextEntry
-            placeholderTextColor="#666"
-          />
+            <InputField
+              placeholder="Correo"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              error={emailError}
+              iconName="mail"
+            />
 
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Ingresar</Text>
-          </TouchableOpacity>
+            <InputField
+              placeholder="Contraseña"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              error={passwordError}
+              iconName="lock"
+            />
 
-          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-            <Text style={styles.link}>¿No tienes cuenta? Regístrate</Text>
-          </TouchableOpacity>
+            <TouchableOpacity onPress={() => console.log('Forgot Password Pressed')} style={styles.forgotPasswordLink}>
+              <Text style={styles.forgotPasswordText}>¿Haz olvidado tu contraseña?</Text>
+            </TouchableOpacity>
+
+            <ButtonCustom
+              title="Ingresar"
+              onPress={handleLogin}
+              isLoading={isLoading}
+              style={styles.loginButton}
+            />
+
+            <TouchableOpacity onPress={() => navigation.navigate('Register')} style={styles.registerLinkContainer}>
+              <Text style={styles.registerText}>¿No eres miembro? <Text style={styles.registerLink}>Regístrate ahora</Text></Text>
+            </TouchableOpacity>
+
+            <SocialIntegration
+              onGooglePress={handleGoogleLogin}
+              onFacebookPress={handleFacebookLogin}
+            />
+          </ScrollView>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -99,51 +180,76 @@ export default function LoginScreen({ navigation }) {
 LoginScreen.propTypes = {
   navigation: PropTypes.shape({
     navigate: PropTypes.func.isRequired,
-    replace: PropTypes.func.isRequired
-  }).isRequired
+    replace: PropTypes.func.isRequired,
+  }).isRequired,
 };
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  container: {
+  flex: {
     flex: 1,
-    width: FORM_WIDTH,
+    backgroundColor: '#fff',
+  },
+  topImageContainer: {
+    width: '100%',
+    height: 250, 
+    overflow: 'hidden',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+  },
+  formContainer: {
+    flex: 1, // Allows it to take the remaining vertical space
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    marginTop: -20, // Overlap the image slightly
+    paddingHorizontal: 25,
+    paddingVertical: 30,
     alignSelf: 'center',
-    justifyContent: 'center',
-    paddingVertical: 20
+    width: '100%',
+    maxWidth: FORM_MAX_WIDTH, // Constrain width on larger screens
+    // If you uncommented temporary borders/backgrounds for debugging, remove them here:
+    // borderWidth: 2,
+    // borderColor: 'blue',
+    // backgroundColor: 'orange',
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '600',
+  scrollContent: {
+    flexGrow: 1, // Allows content to fill the ScrollView's available space
+    justifyContent: 'center', // Centers content vertically within the scroll area if there's extra space
+  },
+  welcomeTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 30,
+    textAlign: 'left',
+  },
+  forgotPasswordLink: {
+    alignSelf: 'flex-end',
     marginBottom: 20,
-    textAlign: 'center'
   },
-  input: {
-    height: 40,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    marginBottom: 12,
+  forgotPasswordText: {
+    color: '#1877F2',
     fontSize: 14,
-    backgroundColor: '#fff'
+    fontWeight: '500',
   },
-  button: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 10,
-    borderRadius: 6,
-    alignItems: 'center',
+  loginButton: {
     marginTop: 10,
-    marginBottom: 12
+    marginBottom: 20,
   },
-  buttonText: {
-    color: '#fff',
+  registerLinkContainer: {
+    marginTop: 0,
+    alignItems: 'center',
+  },
+  registerText: {
     fontSize: 16,
-    fontWeight: '500'
+    color: '#666',
   },
-  link: {
-    textAlign: 'center',
-    color: '#007AFF',
-    fontSize: 14
-  }
+  registerLink: {
+    color: '#1877F2',
+    fontWeight: '600',
+  },
 });

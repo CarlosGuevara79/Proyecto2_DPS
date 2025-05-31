@@ -1,7 +1,9 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MainScreen from '../screens/MainScreen';
-import EventCreateScreen from '../screens/Events/EventCreateScreen';
+import EventCreateScreen from './EventCreateNavigator';
+import EditarEventoScreen from '../screens/Events/EditarEventoScreen';
+
 const Stack = createNativeStackNavigator();
 
 export default function OrganizerNavigator() {
@@ -15,6 +17,7 @@ export default function OrganizerNavigator() {
         name="EventCreate"
         component={EventCreateScreen}
       />
+      <Stack.Screen name="EditarEvento" component={EditarEventoScreen} />
     </Stack.Navigator>
   );
 }
