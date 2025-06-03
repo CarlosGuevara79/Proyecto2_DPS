@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Image // Aqui se importa la imagen que iria como postada del evento
 } from 'react-native';
 import { doc, getDoc, collection, addDoc, getDocs, updateDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../services/firebaseConfig';
@@ -27,6 +28,8 @@ export default function EventDetailScreen({ route, navigation }) {
   const [calificacion, setCalificacion] = useState(0);
   const [yaAsistio, setYaAsistio] = useState(false);
   const [yaCalifico, setYaCalifico] = useState(false);
+  const [promedioCalificacion, setPromedioCalificacion] = useState(0);
+
 
   useEffect(() => {
     cargarEvento();
@@ -34,7 +37,24 @@ export default function EventDetailScreen({ route, navigation }) {
     verificarAsistencia();
     verificarCalificacion();
     calcularPromedioCalificacion();
-  }, []);
+
+    // Setting header options
+    navigation.setOptions({
+      headerShown: true,
+      title: 'Detalles del evento',
+      headerLeft: () => (
+        // This is your custom headerLeft. We can put the 'Return' functionality here.
+        // For now, it's 'null', let's keep it that way for clarity in this specific problem.
+        // The main 'Return' button is at the bottom of the ScrollView.
+        null
+      ),
+      headerRight: () => (
+        <TouchableOpacity onPress={() => {}} style={{ marginRight: 10 }}>
+          <Ionicons name="close" size={24} color="black" />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, id]); // Added 'id' to dependency array for clarity
 
   const cargarEvento = async () => {
     const snap = await getDoc(doc(db, 'eventos', id));
@@ -52,8 +72,6 @@ export default function EventDetailScreen({ route, navigation }) {
     setComentarios(lista);
   };
 
-  const [promedioCalificacion, setPromedioCalificacion] = useState(0);
-
   const calcularPromedioCalificacion = async () => {
     const calRef = collection(db, 'eventos', id, 'calificaciones');
     const snap = await getDocs(calRef);
@@ -68,8 +86,6 @@ export default function EventDetailScreen({ route, navigation }) {
 
     setPromedioCalificacion((suma / total).toFixed(1));
   };
-
-
 
   const verificarAsistencia = async () => {
     const asistenciaRef = doc(db, 'eventos', id, 'asistentes', user.uid);
@@ -88,7 +104,6 @@ export default function EventDetailScreen({ route, navigation }) {
       console.error('Error actualizando asistencia:', error);
     }
   };
-
 
   const verificarCalificacion = async () => {
     const calRef = doc(db, 'eventos', id, 'calificaciones', user.uid);
@@ -135,23 +150,58 @@ export default function EventDetailScreen({ route, navigation }) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{evento.titulo}</Text>
-        <Text style={styles.subtitle}>
-          {evento.fechaObj.toLocaleDateString()} - {evento.fechaObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+
+      <Text style={styles.eventTitleMain}>{evento.titulo}</Text>
+
+      <View style={styles.infoRow}>
+        <Ionicons name="calendar-outline" size={20} color="#666" />
+        <Text style={styles.infoText}>
+          {evento.fechaObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
         </Text>
-        <Text style={styles.subtitle}>{evento.ubicacion}</Text>
-        {new Date() < evento.fechaObj && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>¿Asistirás a este evento?</Text>
-            <AsistenciaSelector
-              asistencia={yaAsistio ? 'si' : 'no'}
-              onSelect={actualizarAsistencia}
-              eventoFinalizado={new Date() > evento.fechaObj}
-            />
-          </View>
-        )}
       </View>
+
+      <View style={styles.infoRow}>
+        <Ionicons name="time-outline" size={20} color="#666" />
+        <Text style={styles.infoText}>
+          {evento.fechaObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+        </Text>
+      </View>
+
+      <TouchableOpacity style={styles.addToCalendarButton}>
+        <Ionicons name="calendar-sharp" size={18} color="#1877F2" />
+        <Text style={styles.addToCalendarButtonText}>Add to Calendar</Text>
+      </TouchableOpacity>
+
+      <View style={styles.section}>
+        <View style={styles.infoRow}>
+          <Ionicons name="location-outline" size={20} color="#666" />
+          <Text style={styles.infoText}>Address</Text>
+        </View>
+        <View style={styles.mapPlaceholder}>
+          <Ionicons name="location" size={50} color="red" />
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Hosted By</Text>
+        <Text style={styles.text}>Host Name</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Event Description</Text>
+        <Text style={styles.text}>{evento.descripcion}</Text>
+      </View>
+
+      {new Date() < evento.fechaObj && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>¿Asistirás a este evento?</Text>
+          <AsistenciaSelector
+            asistencia={yaAsistio ? 'si' : 'no'}
+            onSelect={actualizarAsistencia}
+            eventoFinalizado={new Date() > evento.fechaObj}
+          />
+        </View>
+      )}
 
       {(role === ROLE_ADMIN || role === ROLE_ORGANIZADOR) && (
         <ButtonCustom
@@ -160,37 +210,30 @@ export default function EventDetailScreen({ route, navigation }) {
         />
       )}
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Descripción del evento</Text>
-        <Text style={styles.text}>{evento.descripcion}</Text>
-      </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Comentarios</Text>
-        {comentarios.length > 0 ? (
-          comentarios.map(com => (
-            <View key={com.id} style={styles.comentario}>
-              <Text style={styles.comAutor}>{com.nombre}</Text>
-              <Text>{com.mensaje}</Text>
-            </View>
-          ))
-        ) : (
-          <Text>No hay comentarios aún.</Text>
-        )}
+      {new Date() > evento.fechaObj && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Comentarios</Text>
+          {comentarios.length > 0 ? (
+            comentarios.map(com => (
+              <View key={com.id} style={styles.comentario}>
+                <Text style={styles.comAutor}>{com.nombre}</Text>
+                <Text>{com.mensaje}</Text>
+              </View>
+            ))
+          ) : (
+            <Text>No hay comentarios aún.</Text>
+          )}
 
-        {new Date() > evento.fechaObj ? (
-          <>
-            <InputField
-              label="Nuevo comentario"
-              value={nuevoComentario}
-              onChangeText={setNuevoComentario}
-            />
-            <ButtonCustom title="Comentar" onPress={enviarComentario} />
-          </>
-        ) : (
-          <Text style={{ color: '#666', marginTop: 10 }}>Solo podrás comentar después del evento.</Text>
-        )}
-      </View>
+          <InputField
+            label="Nuevo comentario"
+            value={nuevoComentario}
+            onChangeText={setNuevoComentario}
+          />
+          <ButtonCustom title="Comentar" onPress={enviarComentario} />
+        </View>
+      )}
+
 
       {yaAsistio && new Date() > evento.fechaObj && (
         <View style={styles.section}>
@@ -205,186 +248,128 @@ export default function EventDetailScreen({ route, navigation }) {
           )}
         </View>
       )}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 10 }}>
         <Text style={styles.sectionTitle}>Calificación promedio:</Text>
         <Text style={{ fontSize: 16, color: '#555' }}>
           {promedioCalificacion} ★
         </Text>
       </View>
+
+      {/* Fix for Unexpected text node: <br> is HTML, not JSX for React Native */}
+      {/* Replace <br> with empty View components with height for spacing */}
+      <View style={{ height: 10 }} />
+      <View style={{ height: 10 }} />
+      <View style={{ height: 10 }} />
+
+
+      
+      <TouchableOpacity
+        onPress={() => navigation.navigate('Eventos')} 
+        style={styles.backButton}
+      >
+        <Ionicons name="arrow-back" size={24} color="white" />
+        <Text style={styles.backButtonText}>Regresar al calendario</Text>
+      </TouchableOpacity>
+
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  assistButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 10,
-  },
-
-  assistButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    backgroundColor: '#ccc',
-  },
-
-  assistText: {
-    color: '#fff',
-    marginLeft: 10,
-    fontWeight: 'bold',
-  },
-
-  assistSelectedYes: {
-    backgroundColor: '#4CAF50',
-  },
-
-  assistSelectedNo: {
-    backgroundColor: '#F44336',
-  },
-
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F8F8F8',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 20,
-  },
   container: {
-    flex: 1,
+    flexGrow: 1,
+    backgroundColor: '#F8F8F8',
     paddingHorizontal: 20,
     paddingTop: 20,
-    alignSelf: 'center',
-    width: '100%',
-    maxWidth: 450, // Max width for content consistency
+    paddingBottom: 40,
   },
-  screenTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#333',
-    marginBottom: 20,
-    textAlign: 'left',
-  },
-
-  // Calendar Styles
-  calendarContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  calendarHeader: {
+  backButton: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    backgroundColor: '#1877F2',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    marginBottom: 20,
   },
-  calendarMonth: {
-    fontSize: 18,
-    fontWeight: '600',
+  backButtonText: {
+    color: 'white',
+    marginLeft: 8,
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  eventTitleMain: {
+    fontSize: 24,
+    fontWeight: 'bold',
     color: '#333',
-  },
-  calendarGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center', // Helps center the days if not perfectly aligned
-  },
-  calendarDayHeader: {
-    width: '14.28%', // 100% / 7 days
-    textAlign: 'center',
-    fontSize: 14,
-    color: '#888',
     marginBottom: 10,
   },
-  calendarDayWrapper: {
-    width: '14.28%',
-    aspectRatio: 1, // Keep it square
-    justifyContent: 'center',
-    alignItems: 'center',
-    // backgroundColor: 'blue', // For debugging layout
-  },
-  calendarDayText: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
-  },
-  selectedDay: {
-    backgroundColor: '#1877F2', // Blue for selected day (e.g., Dec 3)
-    borderRadius: 999, // Makes it a circle
-  },
-  selectedDayText: {
-    color: '#fff',
-  },
-
-  // Event List Styles
-  sectionHeading: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#333',
-    marginTop: 25,
-    marginBottom: 15,
-  },
-  eventCard: {
+  infoRow: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 15,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  eventImagePlaceholder: {
-    width: 70,
-    height: 70,
-    borderRadius: 10, // Slightly rounded corners
-    backgroundColor: '#E0E0E0',
-    marginRight: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  eventDetails: {
-    flex: 1,
-  },
-  eventDate: {
-    fontSize: 13,
-    color: '#666',
-    marginBottom: 3,
-  },
-  eventTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
     marginBottom: 5,
   },
-  eventInfoRow: {
+  infoText: {
+    fontSize: 16,
+    color: '#666',
+    marginLeft: 10,
+  },
+  addToCalendarButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 2,
-  },
-  eventInfoIcon: {
-    marginRight: 5,
-  },
-  eventInfoText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  noEventsText: {
-    fontSize: 16,
-    color: '#888',
-    textAlign: 'center',
+    backgroundColor: '#E6F0FF',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
     marginTop: 10,
     marginBottom: 20,
+  },
+  addToCalendarButtonText: {
+    color: '#1877F2',
+    marginLeft: 5,
+    fontWeight: '600',
+  },
+  section: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+  },
+  text: {
+    fontSize: 16,
+    color: '#555',
+    lineHeight: 24,
+  },
+  mapPlaceholder: {
+    width: '100%',
+    height: 200,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  comentario: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  comAutor: {
+    fontWeight: 'bold',
+    marginBottom: 5,
+    color: '#333',
   },
 });

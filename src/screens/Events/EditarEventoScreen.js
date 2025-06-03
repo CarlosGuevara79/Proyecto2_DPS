@@ -2,11 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, Button, Alert, StyleSheet, Platform, ScrollView,
+  TouchableOpacity, 
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { doc, getDoc, updateDoc, Timestamp } from 'firebase/firestore';
 import { db } from '../../services/firebaseConfig';
+import { Ionicons } from '@expo/vector-icons'; 
 
 export default function EditarEventoScreen() {
   const navigation = useNavigation();
@@ -43,7 +45,7 @@ export default function EditarEventoScreen() {
     };
 
     cargarEvento();
-  }, [id]);
+  }, [id, navigation]);
 
   const handleUpdate = async () => {
     if (!titulo || !descripcion || !ubicacion) {
@@ -62,19 +64,24 @@ export default function EditarEventoScreen() {
         actualizadoEn: Timestamp.now()
       });
 
-      navigation.navigate('VerEvento',{id});
+      
+      navigation.navigate('VerEvento', { id });
+      Alert.alert('Éxito', 'Evento actualizado correctamente.');
 
-      Alert.alert('Éxito', 'Evento actualizado correctamente.', [
-        {
-          text: 'Aceptar',
-          onPress: () => navigation.goBack()
-        }
-      ]);
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'No se pudo actualizar el evento.');
     }
   };
+
+
+  const handleCancelAndReturn = () => {
+
+  
+    navigation.navigate('VerEvento', { id });
+  };
+  
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -122,7 +129,19 @@ export default function EditarEventoScreen() {
         />
       )}
 
-      <Button title="Guardar Cambios" onPress={handleUpdate} />
+     
+      <View style={styles.buttonSpacing}>
+        <Button title="Guardar Cambios" onPress={handleUpdate} />
+      </View>
+
+     
+      <TouchableOpacity
+        onPress={handleCancelAndReturn}
+        style={[styles.blueButton, styles.buttonSpacing]} 
+      >
+        <Ionicons name="arrow-back" size={24} color="white" />
+        <Text style={styles.blueButtonText}>Regresar sin cambiar</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -130,7 +149,6 @@ export default function EditarEventoScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    paddingTop: 50,
   },
   title: {
     fontSize: 20,
@@ -147,4 +165,24 @@ const styles = StyleSheet.create({
   fecha: {
     marginVertical: 10,
   },
+  buttonSpacing: {
+    marginTop: 15,
+  },
+  
+  blueButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1877F2', 
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8, 
+    justifyContent: 'center', 
+  },
+  blueButtonText: {
+    color: 'white',
+    marginLeft: 8, 
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+ 
 });

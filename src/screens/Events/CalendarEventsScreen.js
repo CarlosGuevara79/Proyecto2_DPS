@@ -1,5 +1,5 @@
 // src/screens/Events/CalendarEventsScreen.js
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; 
 import {
   View,
   Text,
@@ -8,14 +8,22 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // For calendar navigation icons
-import { Timestamp } from 'firebase/firestore';
-import { useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { Timestamp } from 'firebase/firestore'; 
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../services/firebaseConfig'; // Ajusta según tu ruta real
+import { db } from '../../services/firebaseConfig';
 import { useNavigation } from '@react-navigation/native';
 
-// Placeholder for an individual event card
+
+const getDaysInMonth = (year, month) => {
+  return new Date(year, month + 1, 0).getDate();
+};
+
+const getFirstDayOfMonth = (year, month) => {
+  return new Date(year, month, 1).getDay(); 
+};
+
+
 const EventCard = ({ id, title, date, time, location, isPastEvent = false, onPress }) => (
   <TouchableOpacity onPress={() => onPress(id)} style={styles.eventCard}>
     <View style={styles.eventImagePlaceholder} />
@@ -34,67 +42,119 @@ const EventCard = ({ id, title, date, time, location, isPastEvent = false, onPre
   </TouchableOpacity>
 );
 
-
 export default function CalendarEventsScreen() {
-  // State for calendar month (simplified for placeholder)
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [highlightedDay, setHighlightedDay] = useState(new Date().getDate()); 
+
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [eventsOnHighlightedDay, setEventsOnHighlightedDay] = useState([]); 
 
-  const currentMonth = selectedDate.toLocaleDateString('es-ES', {
+  const navigation = useNavigation();
+
+  
+  const currentMonthDisplay = selectedDate.toLocaleDateString('es-ES', {
     month: 'long',
     year: 'numeric',
   }).replace(/^\w/, c => c.toUpperCase());
 
-  const handlePrevMonth = () => {
+  
+  const handlePrevMonth = useCallback(() => {
     const newDate = new Date(selectedDate);
     newDate.setMonth(newDate.getMonth() - 1);
 
     const minDate = new Date();
-    minDate.setMonth(minDate.getMonth() - 12);
+    minDate.setMonth(minDate.getMonth() - 12); 
 
     if (newDate >= minDate) {
       setSelectedDate(newDate);
+      setHighlightedDay(null);
     } else {
       console.warn('No se puede navegar más allá de hace 12 meses');
     }
-  };
+  }, [selectedDate]);
 
-  const handleNextMonth = () => {
+  
+  const handleNextMonth = useCallback(() => {
     const newDate = new Date(selectedDate);
     newDate.setMonth(newDate.getMonth() + 1);
 
     const maxDate = new Date();
-    maxDate.setMonth(maxDate.getMonth() + 6);
+    maxDate.setMonth(maxDate.getMonth() + 6); 
 
     if (newDate <= maxDate) {
       setSelectedDate(newDate);
+      setHighlightedDay(null); 
     } else {
       console.warn('No se puede navegar más allá de 6 meses en el futuro');
     }
-  };
-  const navigation = useNavigation();
-  const handleSelectEvent = (id) => {
+  }, [selectedDate]);
+
+  
+  const handleSelectEvent = useCallback((id) => {
     navigation.navigate('VerEvento', { id });
-  };
+  }, [navigation]);
+
+  
+  const getCalendarDays = useCallback(() => {
+    const year = selectedDate.getFullYear();
+    const month = selectedDate.getMonth();
+
+    const daysInCurrentMonth = getDaysInMonth(year, month);
+    const firstDayIndex = getFirstDayOfMonth(year, month);
+
+    const days = [];
+
+    
+    const daysInPrevMonth = getDaysInMonth(year, month - 1);
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
+      days.push({ day: daysInPrevMonth - i, isCurrentMonth: false });
+    }
+
+    
+    for (let i = 1; i <= daysInCurrentMonth; i++) {
+      days.push({ day: i, isCurrentMonth: true });
+    }
+
+    
+    const remainingCells = 42 - days.length;
+    for (let i = 1; i <= remainingCells; i++) {
+      days.push({ day: i, isCurrentMonth: false });
+    }
+
+    return days;
+  }, [selectedDate]);
+
+  
+  const handleDayPress = useCallback((dayData) => {
+    const year = selectedDate.getFullYear();
+    const month = selectedDate.getMonth();
+
+    if (dayData.isCurrentMonth) {
+      
+      setHighlightedDay(dayData.day);
+      
+    } else {
+      
+      let newMonth = month;
+      if (dayData.day > 15) { 
+        newMonth = month - 1;
+      } else { 
+        newMonth = month + 1;
+      }
+      const newDate = new Date(year, newMonth, dayData.day);
+      setSelectedDate(newDate); 
+      setHighlightedDay(dayData.day); 
+    }
+  }, [selectedDate]);
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchAndFilterEvents = async () => {
       try {
         const eventosRef = collection(db, 'eventos');
         const querySnapshot = await getDocs(eventosRef);
 
-        const now = new Date();
-        const selectedMonth = selectedDate.getMonth();
-        const selectedYear = selectedDate.getFullYear();
-
-        const threeMonthsAgo = new Date();
-        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-
-        const futurosDelMes = [];
-        const pasadosDelMes = [];
-        const pasadosAnteriores = [];
-
+        const allEvents = [];
         querySnapshot.forEach(doc => {
           const data = doc.data();
           const eventDate = data.fecha?.toDate?.() || new Date();
@@ -104,33 +164,55 @@ export default function CalendarEventsScreen() {
             title: data.titulo,
             description: data.descripcion,
             location: data.ubicacion,
-            date: eventDate.toLocaleDateString(),
-            time: eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            fullDate: eventDate
+            date: eventDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+            time: eventDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+            fullDate: eventDate,
           };
-
-          const sameMonth =
-            eventDate.getMonth() === selectedMonth &&
-            eventDate.getFullYear() === selectedYear;
-
-          if (sameMonth && eventDate >= now) {
-            futurosDelMes.push(event);
-          } else if (sameMonth && eventDate < now) {
-            pasadosDelMes.push(event);
-          } else if (eventDate < now && eventDate >= threeMonthsAgo) {
-            pasadosAnteriores.push(event);
-          }
+          allEvents.push(event);
         });
 
-        setUpcomingEvents(futurosDelMes);
-        setPastEvents([...pasadosDelMes, ...pasadosAnteriores]);
+        const now = new Date();
+        const currentMonthYear = { month: selectedDate.getMonth(), year: selectedDate.getFullYear() };
+
+        
+        const upcomingInCurrentMonth = allEvents.filter(event =>
+          event.fullDate.getMonth() === currentMonthYear.month &&
+          event.fullDate.getFullYear() === currentMonthYear.year &&
+          event.fullDate >= now
+        ).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime()); 
+
+        setUpcomingEvents(upcomingInCurrentMonth);
+
+        // Filtra 3 meses para "Eventos Pasados")
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+        const allPastEvents = allEvents.filter(event =>
+          event.fullDate < now && event.fullDate >= threeMonthsAgo
+        ).sort((a, b) => b.fullDate.getTime() - a.fullDate.getTime());
+
+        setPastEvents(allPastEvents);
+
+        
+        if (highlightedDay) {
+          const eventsOnSpecificDay = allEvents.filter(event =>
+            event.fullDate.getDate() === highlightedDay &&
+            event.fullDate.getMonth() === currentMonthYear.month &&
+            event.fullDate.getFullYear() === currentMonthYear.year
+          ).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
+
+          setEventsOnHighlightedDay(eventsOnSpecificDay);
+        } else {
+          setEventsOnHighlightedDay([]);
+        }
+
       } catch (error) {
         console.error('Error cargando eventos:', error);
       }
     };
 
-    fetchEvents();
-  }, [selectedDate]);
+    fetchAndFilterEvents();
+  }, [selectedDate, highlightedDay]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -145,7 +227,7 @@ export default function CalendarEventsScreen() {
                 <Ionicons name="chevron-back" size={24} color="#333" />
               </TouchableOpacity>
 
-              <Text style={styles.calendarMonth}>{currentMonth}</Text>
+              <Text style={styles.calendarMonth}>{currentMonthDisplay}</Text>
 
               <TouchableOpacity onPress={handleNextMonth}>
                 <Ionicons name="chevron-forward" size={24} color="#333" />
@@ -153,19 +235,66 @@ export default function CalendarEventsScreen() {
             </View>
             <View style={styles.calendarGrid}>
               {/* Day headers */}
-              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-                <Text key={index} style={styles.calendarDayHeader}>{day}</Text>
+              {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map((day, index) => (
+                <Text key={`header-${index}`} style={styles.calendarDayHeader}>{day}</Text>
               ))}
-              {/* Placeholder for calendar days (example from image) */}
-              {[...Array(5)].map((_, i) => <Text key={`empty-${i}`} style={styles.calendarDayText}> </Text>)} {/* Leading empty days */}
-              {[26, 27, 28, 29, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 31, 1, 2, 3, 4, 5, 6].map((day, index) => (
-                <View key={index} style={[styles.calendarDayWrapper, day === 3 && styles.selectedDay]}>
-                  <Text style={[styles.calendarDayText, day === 3 && styles.selectedDayText]}>{day <= 6 ? day : ''}</Text> {/* Simple logic for 1-6 in next month */}
-                </View>
-              ))}
+              
+              {getCalendarDays().map((cell, index) => {
+                const isSelected = cell.isCurrentMonth && cell.day === highlightedDay;
+                const isToday = cell.isCurrentMonth && cell.day === new Date().getDate() &&
+                                selectedDate.getMonth() === new Date().getMonth() &&
+                                selectedDate.getFullYear() === new Date().getFullYear();
+
+                return (
+                  <TouchableOpacity
+                    key={`day-${index}`}
+                    style={[
+                      styles.calendarDayWrapper,
+                      isSelected && styles.selectedDay,
+                      !cell.isCurrentMonth && styles.otherMonthDayWrapper,
+                      isToday && styles.todayHighlight,
+                    ]}
+                    onPress={() => handleDayPress(cell)}
+                  >
+                    <Text
+                      style={[
+                        styles.calendarDayText,
+                        isSelected && styles.selectedDayText,
+                        !cell.isCurrentMonth && styles.otherMonthDayText,
+                        isToday && styles.todayText,
+                      ]}
+                    >
+                      {cell.day}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
-          <Text style={styles.sectionHeading}>Próximos Eventos de {currentMonth}</Text>
+
+          {/* Eventos del dia seleccionado */}
+          {highlightedDay && eventsOnHighlightedDay.length > 0 && (
+            <>
+              <Text style={styles.sectionHeading}>Eventos del {highlightedDay} de {currentMonthDisplay}</Text>
+              {eventsOnHighlightedDay.map(event => (
+                <EventCard
+                  key={event.id}
+                  id={event.id}
+                  title={event.title}
+                  date={event.date}
+                  time={event.time}
+                  location={event.location}
+                  onPress={handleSelectEvent}
+                />
+              ))}
+            </>
+          )}
+          {highlightedDay && eventsOnHighlightedDay.length === 0 && (
+            <Text style={styles.noEventsText}>No hay eventos para el {highlightedDay} de {currentMonthDisplay}.</Text>
+          )}
+
+          {/* Próximos Eventos del mes */}
+          <Text style={styles.sectionHeading}>Próximos Eventos de {currentMonthDisplay}</Text>
           {upcomingEvents.length > 0 ? (
             upcomingEvents.map(event => (
               <EventCard
@@ -182,6 +311,7 @@ export default function CalendarEventsScreen() {
             <Text style={styles.noEventsText}>No hay eventos próximos este mes.</Text>
           )}
 
+          {/* Eventos Pasados */}
           <Text style={styles.sectionHeading}>Eventos Pasados</Text>
           {pastEvents.length > 0 ? (
             pastEvents.map(event => (
@@ -192,6 +322,7 @@ export default function CalendarEventsScreen() {
                 date={event.date}
                 time={event.time}
                 location={event.location}
+                isPastEvent={true}
                 onPress={handleSelectEvent}
               />
             ))
@@ -220,7 +351,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     alignSelf: 'center',
     width: '100%',
-    maxWidth: 450, // Max width for content consistency
+    maxWidth: 450,
   },
   screenTitle: {
     fontSize: 28,
@@ -230,7 +361,6 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
 
-  // Calendar Styles
   calendarContainer: {
     backgroundColor: '#fff',
     borderRadius: 15,
@@ -256,10 +386,10 @@ const styles = StyleSheet.create({
   calendarGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'center', // Helps center the days if not perfectly aligned
+    justifyContent: 'center',
   },
   calendarDayHeader: {
-    width: '14.28%', // 100% / 7 days
+    width: '14.28%',
     textAlign: 'center',
     fontSize: 14,
     color: '#888',
@@ -267,25 +397,39 @@ const styles = StyleSheet.create({
   },
   calendarDayWrapper: {
     width: '14.28%',
-    aspectRatio: 1, // Keep it square
+    aspectRatio: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    // backgroundColor: 'blue', // For debugging layout
   },
   calendarDayText: {
     fontSize: 16,
     color: '#333',
     fontWeight: '500',
   },
+
+  otherMonthDayWrapper: {
+  },
+
+  otherMonthDayText: {
+    color: '#bbb',
+  },
   selectedDay: {
-    backgroundColor: '#1877F2', // Blue for selected day (e.g., Dec 3)
-    borderRadius: 999, // Makes it a circle
+    backgroundColor: '#1877F2',
+    borderRadius: 999, 
   },
   selectedDayText: {
     color: '#fff',
   },
+  todayHighlight: {
+    borderColor: '#1877F2',
+    borderWidth: 1,
+    borderRadius: 999,
+  },
+  todayText: {
+    fontWeight: 'bold',
+  },
 
-  // Event List Styles
+ 
   sectionHeading: {
     fontSize: 22,
     fontWeight: '600',
@@ -309,7 +453,7 @@ const styles = StyleSheet.create({
   eventImagePlaceholder: {
     width: 70,
     height: 70,
-    borderRadius: 10, // Slightly rounded corners
+    borderRadius: 10,
     backgroundColor: '#E0E0E0',
     marginRight: 15,
     justifyContent: 'center',

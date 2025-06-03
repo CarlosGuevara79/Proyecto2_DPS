@@ -117,18 +117,18 @@ const handleNext = async () => {
           />
           <Text style={styles.formSectionTitle}>Hora y Fecha del Evento</Text>
           <View style={styles.timingRow}>
-            {/* Start Date */}
+            
             <TouchableOpacity onPress={() => setShowStartDatePicker(true)} style={styles.datePickerInput}>
               <InputField
                 placeholder="DD/MM/YY"
                 label="Start Date"
                 value={fecha.toLocaleDateString()}
-                editable={false} // Make it not directly editable by keyboard
+                editable={false} 
                 iconName="calendar"
                 style={styles.halfWidthInput}
               />
             </TouchableOpacity>
-            {/* Start Time */}
+          
             <TouchableOpacity onPress={() => setShowStartDatePicker(true)} style={styles.datePickerInput}>
               <InputField
                 placeholder="12:00 AM"
@@ -216,11 +216,11 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   halfWidthInput: {
-    width: '100%', // InputField handles its own width now
+    width: '100%',
   },
   datePickerInput: {
-    flex: 0.48, // Control width for the touchable area wrapping the input
-    // This allows the touchable to be half-width
+    flex: 0.48, 
+    
   },
   guestOptionsContainer: {
     flexDirection: 'row',

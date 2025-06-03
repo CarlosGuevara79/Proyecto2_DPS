@@ -4,19 +4,18 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
-import EditarEventoScreen from '../screens/Events/EditarEventoScreen';
 
-// Import your existing navigators
-// import EventNavigator from './EventNavigator'; // <--- REMOVED THIS LINE
+
+import EditarEventoScreen from '../screens/Events/EditarEventoScreen';
+import EventDetailScreen from '../screens/Events/EventDetailScreen'; 
+import CalendarEventsScreen from '../screens/Events/CalendarEventsScreen';
+
 import OrganizerNavigator from './OrganizerNavigator';
 import AdminNavigator from './AdminNavigator';
-
-import EventCreateScreen from './EventCreateNavigator';
+import EventCreateScreen from './EventCreateNavigator'; 
 import MessagesScreen from '../screens/MessagesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import CalendarEventsScreen from '../screens/Events/CalendarEventsScreen';
 import MainScreen from '../screens/MainScreen';
-import EventDetailScreen from '../screens/Events/EventDetailScreen';
 
 import { useAuthContext } from '../hooks/useAuthContext';
 import { ROLE_ADMIN, ROLE_ORGANIZADOR } from '../services/roles';
@@ -35,7 +34,7 @@ function TabRoutes() {
           let iconName;
           if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Eventos') { 
+          } else if (route.name === 'Eventos') {
             iconName = focused ? 'calendar' : 'calendar-outline';
           } else if (route.name === 'Crear Evento') {
             iconName = focused ? 'add-circle' : 'add-circle-outline';
@@ -63,22 +62,12 @@ function TabRoutes() {
         }
       })}
     >
-      {/* Pestaña "Home" - Ahora apunta directamente a MainScreen */}
       <Tab.Screen name="Home" component={MainScreen} />
-
-      {/* Pestaña "Eventos" - Apunta a tu nueva pantalla de calendario y eventos */}
       <Tab.Screen name="Eventos" component={CalendarEventsScreen} />
-
-      {/* Pestaña "Crear Evento" - This now points to the EventCreateScreen that manages the flow */}
       <Tab.Screen name="Crear Evento" component={EventCreateScreen} />
-
-      {/* Pestaña "Mensajes"  EN ESTA VERSION NO SALDRA EL CHAT DEBIDO AL TIEMPO.*/}
       <Tab.Screen name="Mensajes" component={MessagesScreen} />
-
-      {/* Pestaña "Perfil" */}
       <Tab.Screen name="Perfil" component={ProfileScreen} />
 
-      {/* Pestañas condicionales existentes */}
       {role === ROLE_ORGANIZADOR && (
         <Tab.Screen name="Gestionar Eventos" component={OrganizerNavigator} />
       )}
@@ -88,6 +77,7 @@ function TabRoutes() {
     </Tab.Navigator>
   );
 }
+
 
 export default function AppNavigator() {
   return (
