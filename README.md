@@ -275,7 +275,13 @@ Usar siempre constantes en lugar de strings.
   
 ---
 
-Licencia
+## Licencia
+
+[![Licencia: CC BY-NC-SA 4.0](https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+Este proyecto está bajo la Licencia Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional.  
+Más información en [https://creativecommons.org/licenses/by-nc-sa/4.0/](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 Licencia Creative Commons
 Esta obra está bajo una Licencia Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional. Usted es libre de:
 
