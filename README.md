@@ -1,3 +1,7 @@
+# 🦉 Documento Final
+
+https://drive.google.com/file/d/1u-tDpmqoFuZSch7JMnavjXPRVYXrwVwM/view?usp=sharing
+
 # 🎉 Proyecto Final React Native DPS: Eventos Comunitarios
 
 Aplicación móvil y web para gestionar **Eventos Comunitarios**, desarrollada con **React Native** (SDK 53) + **Expo CLI** y **Firebase**.
