@@ -297,6 +297,15 @@ CompartirIgual — Si remezcla, transforma o crea a partir del material, debe di
 
 ---
 
+# https://iconos8.es/icon/2vnM1SFnEVKv/c-3po  Manual Tecnico
+
+https://drive.google.com/file/d/190QRq5w1CCfC784Hh-stMWTp5wH5NHvT/view?usp=sharing
+
+# https://iconos8.es/icon/49171/r2-d2  Manual de usuario
+
+https://drive.google.com/file/d/1r5QVhsTuyCGZxtujyeVTWeaFsFLZdJEG/view?usp=sharing
+
+
 *¡Roles del Equipo Metodologia Scrum!*
 1. Cesar Ernesto Perdomo Guerrero pg241690 (Product Owner)
 2. Fabricio Antonio Castro Martinez cm240137 (Scrum Master)
