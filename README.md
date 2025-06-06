@@ -297,11 +297,11 @@ CompartirIgual — Si remezcla, transforma o crea a partir del material, debe di
 
 ---
 
-# https://iconos8.es/icon/2vnM1SFnEVKv/c-3po  Manual Tecnico
+# 📘📘📘  Manual Tecnico
 
 https://drive.google.com/file/d/190QRq5w1CCfC784Hh-stMWTp5wH5NHvT/view?usp=sharing
 
-# https://iconos8.es/icon/49171/r2-d2  Manual de usuario
+# 📗📗📗 Manual de usuario
 
 https://drive.google.com/file/d/1r5QVhsTuyCGZxtujyeVTWeaFsFLZdJEG/view?usp=sharing
 
