@@ -1,6 +1,10 @@
 {
   "expo": {
-    "platforms": ["ios", "android", "web"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "name": "eventos-comunitarios",
     "slug": "eventos-comunitarios",
     "version": "1.0.0",
@@ -8,10 +12,14 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "extra": { 
-      "webClientId":   "agregar_WEB_CLIENT_ID",
-      "iosClientId":   "agregar_IOS_CLIENT_ID",
-      "androidClientId":"agregar_ANDROID_CLIENT_ID"
+    "facebookAppId": "1483064283100630",
+    "facebookDisplayName": "Eventos Comunitarios",
+    "extra": {
+      "webClientId": "agregar_WEB_CLIENT_ID",
+      "iosClientId": "agregar_IOS_CLIENT_ID",
+      "androidClientId": "1068897416810-oj3ch8q75m3hdnjla0m70bibkejdh30a.apps.googleusercontent.com",
+      "facebookAppId": "1483064283100630",
+      "facebookAppSecret": "2c7be48d47034de51ac6554988372f18"
     },
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -19,18 +27,50 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "SKAdNetworkItems": [
+          {
+            "SKAdNetworkIdentifier": "v9wttpbfk9.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "n38lu8286q.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "v9wttpbfk9.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "n38lu8286q.skadnetwork"
+          }
+        ]
+      },
+      "bundleIdentifier": "com.anonymous.eventoscomunitarios"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.eventoscomunitarios",
+      "googleServicesFile": "./google-services.json",
+      "permissions": [
+        "android.permission.INTERNET"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-
-    }
+    },
+    "plugins": [
+      "expo-web-browser",
+      [
+        "react-native-fbsdk-next",
+        {
+          "appID": "1483064283100630",
+          "clientToken": "2c7be48d47034de51ac6554988372f18",
+          "displayName": "Eventos Comunitarios"
+        }
+      ]
+    ]
   }
 }

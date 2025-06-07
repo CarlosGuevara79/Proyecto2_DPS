@@ -1,0 +1,8 @@
+<resources>
+  <string name="app_name">eventos-comunitarios</string>
+  <string name="expo_splash_screen_resize_mode" translatable="false">contain</string>
+  <string name="expo_splash_screen_status_bar_translucent" translatable="false">false</string>
+  <string name="facebook_app_id">1483064283100630</string>
+  <string name="facebook_client_token">2c7be48d47034de51ac6554988372f18</string>
+  <string name="fb_login_protocol_scheme">fb1483064283100630</string>
+</resources>

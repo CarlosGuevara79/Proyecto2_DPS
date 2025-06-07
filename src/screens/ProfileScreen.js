@@ -10,7 +10,7 @@ export default function ProfileScreen() {
   const { user, role } = useAuthContext(); // Get user and role from context
 
   // Extract user details (using optional chaining for safety)
-  const userName = user?.displayName || user?.email || 'Usuario Desconocido';
+  const userName = user?.nombre || user?.email || 'Usuario Desconocido';
   const userEmail = user?.email || 'No disponible';
   const userRole = role || 'No asignado';
 
@@ -18,19 +18,13 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.container}>
-          {/* Photo Placeholder Section */}
           <View style={styles.profilePhotoContainer}>
-            {/* You can replace this with an actual Image component later */}
-            {/* Example: <Image source={require('../../assets/profile_pic.png')} style={styles.profilePhoto} /> */}
             <Ionicons name="person-circle-outline" size={100} color="#ccc" />
           </View>
 
-          {/* User Information Section */}
           <Text style={styles.userName}>{userName}</Text>
           <Text style={styles.userEmail}>{userEmail}</Text>
           <Text style={styles.userRole}>Rol: {userRole}</Text>
-
-          {/* Placeholder for other profile details or options */}
           <View style={styles.infoCard}>
             <Text style={styles.cardTitle}>Acerca de mí</Text>
             <Text style={styles.cardText}>
@@ -45,14 +39,6 @@ export default function ProfileScreen() {
               Opciones de configuración de la cuenta, notificaciones, privacidad, etc.
             </Text>
           </View>
-
-          <View style={styles.infoCard}>
-            <Text style={styles.cardTitle}>Mis Eventos Creados</Text>
-            <Text style={styles.cardText}>
-              Lista de eventos que el usuario ha organizado o creado.
-            </Text>
-          </View>
-
         </View>
       </ScrollView>
     </SafeAreaView>

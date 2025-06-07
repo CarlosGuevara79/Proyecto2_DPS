@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1068897416810",
+    "project_id": "react-fb-auth-89e8a",
+    "storage_bucket": "react-fb-auth-89e8a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1068897416810:android:b57f53e9f2b95d60003c13",
+        "android_client_info": {
+          "package_name": "com.anonymous.eventoscomunitarios"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1068897416810-nh0k4vencpps1s8679epbpunh87bc5i7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBa0hhSJiJ7MVGjKqryHEOQdajHypfj7TI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1068897416810-nh0k4vencpps1s8679epbpunh87bc5i7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

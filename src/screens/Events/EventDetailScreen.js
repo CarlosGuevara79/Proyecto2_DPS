@@ -38,14 +38,10 @@ export default function EventDetailScreen({ route, navigation }) {
     verificarCalificacion();
     calcularPromedioCalificacion();
 
-    // Setting header options
     navigation.setOptions({
       headerShown: true,
       title: 'Detalles del evento',
       headerLeft: () => (
-        // This is your custom headerLeft. We can put the 'Return' functionality here.
-        // For now, it's 'null', let's keep it that way for clarity in this specific problem.
-        // The main 'Return' button is at the bottom of the ScrollView.
         null
       ),
       headerRight: () => (
@@ -54,7 +50,7 @@ export default function EventDetailScreen({ route, navigation }) {
         </TouchableOpacity>
       ),
     });
-  }, [navigation, id]); // Added 'id' to dependency array for clarity
+  }, [navigation, id]);
 
   const cargarEvento = async () => {
     const snap = await getDoc(doc(db, 'eventos', id));
@@ -224,19 +220,18 @@ export default function EventDetailScreen({ route, navigation }) {
           ) : (
             <Text>No hay comentarios aún.</Text>
           )}
-
-          <InputField
-            label="Nuevo comentario"
-            value={nuevoComentario}
-            onChangeText={setNuevoComentario}
-          />
-          <ButtonCustom title="Comentar" onPress={enviarComentario} />
         </View>
       )}
 
 
       {yaAsistio && new Date() > evento.fechaObj && (
         <View style={styles.section}>
+          <InputField
+            label="Nuevo comentario"
+            value={nuevoComentario}
+            onChangeText={setNuevoComentario}
+          />
+          <ButtonCustom title="Comentar" onPress={enviarComentario} />
           <Text style={styles.sectionTitle}>Tu calificación</Text>
           <StarRating
             rating={calificacion}
@@ -262,17 +257,6 @@ export default function EventDetailScreen({ route, navigation }) {
       <View style={{ height: 10 }} />
       <View style={{ height: 10 }} />
       <View style={{ height: 10 }} />
-
-
-      
-      <TouchableOpacity
-        onPress={() => navigation.navigate('Eventos')} 
-        style={styles.backButton}
-      >
-        <Ionicons name="arrow-back" size={24} color="white" />
-        <Text style={styles.backButtonText}>Regresar al calendario</Text>
-      </TouchableOpacity>
-
     </ScrollView>
   );
 }
