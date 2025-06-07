@@ -164,17 +164,7 @@ export default function EventDetailScreen({ route, navigation }) {
       </View>
 
       <View style={styles.section}>
-        <View style={styles.infoRow}>
-          <Ionicons name="location-outline" size={20} color="#666" />
-          <Text style={styles.infoText}>Address</Text>
-        </View>
-        <View style={styles.mapPlaceholder}>
-          <Ionicons name="location" size={50} color="red" />
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Event Description</Text>
+        <Text style={styles.sectionTitle}>descripcion del evento</Text>
         <Text style={styles.text}>{evento.descripcion}</Text>
       </View>
 
