@@ -21,7 +21,7 @@ export default function MainScreen({ navigation }) {
   //const isAuthorizedToPlanEvent = true; Lo usamos para hacer pruebas
 
   const isAuthorizedToPlanEvent = role === ROLE_ADMIN || role === ROLE_ORGANIZADOR;
-
+  console.log(user)
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}> 
@@ -167,3 +167,6 @@ const styles = StyleSheet.create({
 
 
 import { ScrollView } from 'react-native';
+
+// Este archivo está bajo la Licencia Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional (CC BY-NC-SA 4.0)
+// Puedes ver el texto completo de la licencia en: https://creativecommons.org/licenses/by-nc-sa/4.0/

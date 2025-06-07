@@ -4,20 +4,22 @@ import React, { createContext, useState } from 'react';
 export const AuthContext = createContext({
   user: null,
   role: null,
-  nombre: null,
+  displayName: null,
   setUser: () => {},
   setRole: () => {},
-  setNombre: () => {}
+  setdisplayName: () => {}
 });
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
-  const [nombre, setNombre] = useState(null);
+  const [displayName, setdisplayName] = useState(null);
   
   return (
-    <AuthContext.Provider value={{ user, role,nombre, setUser, setRole,setNombre }}>
+    <AuthContext.Provider value={{ user, role,displayName, setUser, setRole,setdisplayName }}>
       {children}
     </AuthContext.Provider>
   );
 }
+// Este archivo está bajo la Licencia Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional (CC BY-NC-SA 4.0)
+// Puedes ver el texto completo de la licencia en: https://creativecommons.org/licenses/by-nc-sa/4.0/

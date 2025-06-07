@@ -15,11 +15,10 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
-import { Timestamp } from 'firebase/firestore'; 
-import { useAuthContext } from '../../../hooks/useAuthContext'; 
-import { createEvent } from '../../../services/apiHandlers'; 
+import { Timestamp } from 'firebase/firestore';
+import { useAuthContext } from '../../../hooks/useAuthContext';
+import { createEvent } from '../../../services/apiHandlers';
 import { ROLE_ADMIN, ROLE_ORGANIZADOR } from '../../../services/roles';
-
 import InputField from '../../../components/InputField';
 import ButtonCustom from '../../../components/ButtonCustom';
 
@@ -31,6 +30,7 @@ export default function Step2EventDetailsScreen({ navigation, route }) {
   const [fecha, setFecha] = useState(new Date());
   const [alcance, setAlcance] = useState('');
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   useEffect(() => {
     if (route.params?.eventData) {
@@ -60,35 +60,48 @@ export default function Step2EventDetailsScreen({ navigation, route }) {
   }
 
   const handleDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || fecha;
-    setShowStartDatePicker(false);
-    setFecha(currentDate);
+    if (selectedDate) {
+      setFecha(selectedDate);
+      setShowStartDatePicker(false);
+      setShowTimePicker(true); // después de seleccionar fecha, mostrar hora
+    } else {
+      setShowStartDatePicker(false);
+    }
   };
 
+  const handleTimeChange = (event, selectedTime) => {
+    if (selectedTime) {
+      const newDate = new Date(fecha);
+      newDate.setHours(selectedTime.getHours());
+      newDate.setMinutes(selectedTime.getMinutes());
+      setFecha(newDate);
+    }
+    setShowTimePicker(false);
+  };
 
-const handleNext = async () => {
-  if (titulo.trim() == ''|| descripcion.trim() == '' || ubicacion.trim() == ''|| alcance.trim() == '') {
-    console.log('Completa todos los campos.' , titulo, descripcion,ubicacion,alcance)
-    Alert.alert('Error', 'Completa todos los campos con valores validos');
-    return;
-  }
-  try {
-    await createEvent({
-      titulo,
-      descripcion,
-      ubicacion,
-      fecha: Timestamp.fromDate(fecha),
-      creadoPor: user.uid, 
-      alcance
-    });
-    navigation.navigate('CalendarEventsScreen');
-    console.log('Evento guardado con exito')
-  Alert.alert('Éxito', 'Evento guardado correctamente.');
-  } catch (error) {
-    console.error(error);
-    Alert.alert('Error', 'No se pudo guardar el evento.');
-  }
-};
+  const handleNext = async () => {
+    if (titulo.trim() == '' || descripcion.trim() == '' || ubicacion.trim() == '' || alcance.trim() == '') {
+      console.log('Completa todos los campos.', titulo, descripcion, ubicacion, alcance)
+      Alert.alert('Error', 'Completa todos los campos con valores validos');
+      return;
+    }
+    try {
+      await createEvent({
+        titulo,
+        descripcion,
+        ubicacion,
+        fecha: Timestamp.fromDate(fecha),
+        creadoPor: user.uid,
+        alcance
+      });
+      navigation.navigate('CalendarEventsScreen');
+      console.log('Evento guardado con exito')
+      Alert.alert('Éxito', 'Evento guardado correctamente.');
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'No se pudo guardar el evento.');
+    }
+  };
 
 
   return (
@@ -116,23 +129,23 @@ const handleNext = async () => {
             onChangeText={setDescripcion}
           />
           <Text style={styles.formSectionTitle}>Hora y Fecha del Evento</Text>
+
           <View style={styles.timingRow}>
-            
             <TouchableOpacity onPress={() => setShowStartDatePicker(true)} style={styles.datePickerInput}>
               <InputField
                 placeholder="DD/MM/YY"
-                label="Start Date"
+                label="Fecha"
                 value={fecha.toLocaleDateString()}
-                editable={false} 
+                editable={false}
                 iconName="calendar"
                 style={styles.halfWidthInput}
               />
             </TouchableOpacity>
-          
-            <TouchableOpacity onPress={() => setShowStartDatePicker(true)} style={styles.datePickerInput}>
+
+            <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.datePickerInput}>
               <InputField
                 placeholder="12:00 AM"
-                label="Start Time"
+                label="Hora"
                 value={fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 editable={false}
                 iconName="time-outline"
@@ -140,12 +153,39 @@ const handleNext = async () => {
               />
             </TouchableOpacity>
           </View>
+
           {showStartDatePicker && (
             <DateTimePicker
               value={fecha}
-              mode="datetime"
+              mode="date"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={handleDateChange}
+              onChange={(event, selectedDate) => {
+                if (selectedDate) {
+                  const updatedDate = new Date(fecha);
+                  updatedDate.setFullYear(selectedDate.getFullYear());
+                  updatedDate.setMonth(selectedDate.getMonth());
+                  updatedDate.setDate(selectedDate.getDate());
+                  setFecha(updatedDate);
+                }
+                setShowStartDatePicker(false);
+              }}
+            />
+          )}
+
+          {showTimePicker && (
+            <DateTimePicker
+              value={fecha}
+              mode="time"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={(event, selectedTime) => {
+                if (selectedTime) {
+                  const updatedDate = new Date(fecha);
+                  updatedDate.setHours(selectedTime.getHours());
+                  updatedDate.setMinutes(selectedTime.getMinutes());
+                  setFecha(updatedDate);
+                }
+                setShowTimePicker(false);
+              }}
             />
           )}
 
@@ -156,7 +196,7 @@ const handleNext = async () => {
             onChangeText={setUbicacion}
           />
           <Text style={styles.formSectionTitle}>Para cuantas personas esta proyectado el evento?</Text>
-          <InputField value={alcance} onChangeText={setAlcance}  placeholder="Alcance del evento" label="100" />
+          <InputField value={alcance} onChangeText={setAlcance} placeholder="Alcance del evento" label="100" />
           <ButtonCustom
             title="Guardar Evento"
             onPress={handleNext}
@@ -219,8 +259,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   datePickerInput: {
-    flex: 0.48, 
-    
+    flex: 0.48,
+
   },
   guestOptionsContainer: {
     flexDirection: 'row',
@@ -255,3 +295,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+// Este archivo está bajo la Licencia Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional (CC BY-NC-SA 4.0)
+// Puedes ver el texto completo de la licencia en: https://creativecommons.org/licenses/by-nc-sa/4.0/

@@ -115,7 +115,7 @@ export default function EventDetailScreen({ route, navigation }) {
 
     await addDoc(collection(db, 'eventos', id, 'comentarios'), {
       userId: user.uid,
-      nombre: user.name || 'Anónimo',
+      nombre: user.setdisplayName || 'Anónimo',
       mensaje: nuevoComentario,
       fecha: new Date()
     });
@@ -163,11 +163,6 @@ export default function EventDetailScreen({ route, navigation }) {
         </Text>
       </View>
 
-      <TouchableOpacity style={styles.addToCalendarButton}>
-        <Ionicons name="calendar-sharp" size={18} color="#1877F2" />
-        <Text style={styles.addToCalendarButtonText}>Add to Calendar</Text>
-      </TouchableOpacity>
-
       <View style={styles.section}>
         <View style={styles.infoRow}>
           <Ionicons name="location-outline" size={20} color="#666" />
@@ -179,18 +174,12 @@ export default function EventDetailScreen({ route, navigation }) {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Hosted By</Text>
-        <Text style={styles.text}>Host Name</Text>
-      </View>
-
-      <View style={styles.section}>
         <Text style={styles.sectionTitle}>Event Description</Text>
         <Text style={styles.text}>{evento.descripcion}</Text>
       </View>
 
       {new Date() < evento.fechaObj && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>¿Asistirás a este evento?</Text>
           <AsistenciaSelector
             asistencia={yaAsistio ? 'si' : 'no'}
             onSelect={actualizarAsistencia}
@@ -357,3 +346,6 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 });
+
+// Este archivo está bajo la Licencia Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional (CC BY-NC-SA 4.0)
+// Puedes ver el texto completo de la licencia en: https://creativecommons.org/licenses/by-nc-sa/4.0/
