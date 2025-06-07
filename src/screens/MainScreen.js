@@ -17,8 +17,6 @@ const { width } = Dimensions.get('window');
 export default function MainScreen({ navigation }) {
   const { user } = useAuthContext(); 
   const role = user?.role; 
-  console.log("El rol es: ", role); 
-
   
   //const isAuthorizedToPlanEvent = true; Lo usamos para hacer pruebas
 
@@ -30,7 +28,7 @@ export default function MainScreen({ navigation }) {
         <View style={styles.container}>
           {/* "Hola Usuario!" section */}
           <View style={styles.welcomeCard}>
-            <Text style={styles.greetingText}>Hola {user?.name || 'Usuario'}!</Text> 
+            <Text style={styles.greetingText}>Hola {user?.nombre || 'Usuario'}!</Text> 
             <Text style={styles.introText}>
               ¡Hagamos que tus eventos sean extraordinarios, empezando aquí mismo!
             </Text>

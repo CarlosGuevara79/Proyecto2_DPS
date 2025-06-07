@@ -2,7 +2,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
-import Icon from 'react-native-vector-icons/FontAwesome'; // You'll need to install this library
+import Icon from 'react-native-vector-icons/FontAwesome'; 
 
 export default function SocialIntegration({ onGooglePress, onFacebookPress }) {
   return (
@@ -14,11 +14,12 @@ export default function SocialIntegration({ onGooglePress, onFacebookPress }) {
       </View>
 
       <View style={styles.buttonsContainer}>
-        <TouchableOpacity style={styles.socialButton} onPress={onGooglePress} activeOpacity={0.7}>
-          <Icon name="google" size={24} color="#DB4437" /> {/* Google Red */}
+        <TouchableOpacity style={styles.socialButton} onPress={onGooglePress}>
+          <Icon name="google" size={24} color="#DB4437" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.socialButton} onPress={onFacebookPress} activeOpacity={0.7}>
-          <Icon name="facebook" size={24} color="#4267B2" /> {/* Facebook Blue */}
+
+        <TouchableOpacity style={styles.socialButton} onPress={onFacebookPress}>
+          <Icon name="facebook" size={24} color="#4267B2" />
         </TouchableOpacity>
       </View>
     </View>

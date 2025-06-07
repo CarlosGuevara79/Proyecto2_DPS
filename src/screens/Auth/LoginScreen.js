@@ -1,5 +1,5 @@
 // src/screens/Auth/LoginScreen.js
-import React, { useState } from 'react';
+import React, { useState, useEffect,useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {
   View,
@@ -15,15 +15,18 @@ import {
   ScrollView, // <--- Import ScrollView
 } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc,setDoc } from 'firebase/firestore';
 import { auth, db } from '../../services/firebaseConfig';
 import { useAuthContext } from '../../hooks/useAuthContext';
+
 
 // Import the new UI components
 import InputField from '../../components/InputField';
 import ButtonCustom from '../../components/ButtonCustom';
 import SocialIntegration from '../../components/SocialIntegration';
-
+import { useGoogleAuth, handleGoogleSignIn } from '../../services/useGoogleAuth';
+import { ROLE_MIEMBRO } from '../../services/roles';
+import { loginWithFacebook } from '../../services/facebookAuth';
 // Import your Login image
 import LoginImage from '../../../assets/LoginImage.png';
 
@@ -36,6 +39,7 @@ export default function LoginScreen({ navigation }) {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { response, promptAsync } = useGoogleAuth();
 
   const { setUser, setRole } = useAuthContext();
 
@@ -56,8 +60,8 @@ export default function LoginScreen({ navigation }) {
       setPasswordError('La contraseña es obligatoria.');
       isValid = false;
     } else if (password.length < 6) {
-        setPasswordError('La contraseña debe tener al menos 6 caracteres.');
-        isValid = false;
+      setPasswordError('La contraseña debe tener al menos 6 caracteres.');
+      isValid = false;
     }
 
     return isValid;
@@ -102,13 +106,54 @@ export default function LoginScreen({ navigation }) {
     }
   };
 
+  useEffect(() => {
+    const processGoogleLogin = async () => {
+      if (response?.type === 'success') {
+        try {
+          const user = await handleGoogleSignIn(response);
+          const snap = await getDoc(doc(db, 'usuarios', user.uid));
+          setUser(user);
+          setRole(snap.data().rol);
+          navigation.navigate('Main');
+        } catch (err) {
+          Alert.alert('Error', err.message);
+        }
+      }
+    };
+    processGoogleLogin();
+  }, [response]);
+
   const handleGoogleLogin = () => {
-    Alert.alert('Google Login', 'Implement Google login here!');
+    promptAsync();
   };
 
-  const handleFacebookLogin = () => {
-    Alert.alert('Facebook Login', 'Implement Facebook login here!');
-  };
+const handleFacebookLogin = async () => {
+  try {
+    const user = await loginWithFacebook(); // función definida en facebookAuth.js
+    const userRef = doc(db, 'usuarios', user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (userSnap.exists()) {
+      setUser(user);
+      setRole(userSnap.data().rol);
+    } else {
+      await setDoc(userRef, {
+        nombre: user.displayName || 'Anónimo',
+        correo: user.email || '',
+        rol: ROLE_MIEMBRO,
+        creado: new Date(),
+      });
+      setUser(user);
+      setRole(ROLE_MIEMBRO);
+    }
+
+    navigation.replace('Main');
+  } catch (error) {
+    console.error('Error en Facebook Login:', error);
+    Alert.alert('Error', error.message || 'Falló el inicio con Facebook');
+  }
+};
+
 
   return (
     <SafeAreaView style={styles.flex}>
@@ -191,7 +236,7 @@ const styles = StyleSheet.create({
   },
   topImageContainer: {
     width: '100%',
-    height: 250, 
+    height: 250,
     overflow: 'hidden',
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
